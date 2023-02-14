@@ -27,6 +27,8 @@ walls = [[5,4,556,15], [4,16,17,614], [15,184,115,394], [16,484,56,515], [543,16
         [144,303,175,395], [383,304,415,395], [205,364,355,395], [263,396,295,456], [145,425,235,455], [324,425,415,455],
         [445,425,515,456], [445,456,476,515], [45,424,115,455], [84,455,115,514], [205,484,355,515], [264,515,295,574],
         [384,485,415,544], [325,544,515,574], [145,484,176,544], [44,544,235,574], [15,604,555,614], [205,244,354,332]]
+
+
 # pacman initial position info
 pacmanXpos = 40
 pacmanYpos = 20
@@ -40,12 +42,13 @@ enemyYpos = [20, 40, 400, 220]
 enemyXcha = [0, 0, 0, 0]
 enemyYcha = [0, 0, 0, 0]
 WALLS = set()
+FOOD = set() 
 # initial state
 state = "ready"
 # initial level
 level = 1
 # highest score
-score = 1000
+score = 0
 
 # fonts
 fluoGumsFont = pygame.font.Font("fonts/Fluo Gums.ttf", 32)
@@ -62,11 +65,13 @@ white = (255, 255, 255)
 iconPic = pygame.image.load("images/icon.png")
 backgroundPic = pygame.image.load("images/maze2.png")
 backgroundPic = pygame.transform.scale(backgroundPic, (width, height))
+blackPic = pygame.image.load("images/blackimage2020.png")
 playerPic = pygame.image.load("images/2020pacman.png")
 enemy1Pic = pygame.image.load("images/redenemy2020.png")
 enemy2Pic = pygame.image.load("images/yellowenemy2020.png")
 enemy3Pic = pygame.image.load("images/redenemy2020.png")
 enemy4Pic = pygame.image.load("images/yellowenemy2020.png")
+foodPic = pygame.image.load("images/food2020.png")
 enemies = [enemy1Pic, enemy2Pic, enemy3Pic, enemy4Pic] 
 
 # music
@@ -87,7 +92,40 @@ def init():
         for x in range((p[0]//20) * 20, (p[2]//20)*20 + 1, 20):
             for y in range ((p[1]//20 ) * 20, (p[3]//20)*20 + 1, 20):
                 WALLS.add((x,y))
+   
+    
+def initfood():
+    FOOD.add((400,20))
+    FOOD.add((200,20))    
+    FOOD.add((120,20))
+    FOOD.add((120,80))
+    FOOD.add((120,120))
+    FOOD.add((120,200))
+    FOOD.add((120,240))
+    FOOD.add((120,300))                        
+    FOOD.add((20,40))
+    FOOD.add((20,100))
+    FOOD.add((80,20))
+    FOOD.add((420,40))
+    FOOD.add((420,100))
+    FOOD.add((420,180))
+    FOOD.add((420,240))
+    FOOD.add((420,300))                
+    FOOD.add((420,400))                
+    FOOD.add((420,480))                
+    FOOD.add((420,500))             
+    FOOD.add((400,580))             
+    FOOD.add((340,580))             
+    FOOD.add((260,580))             
+    FOOD.add((200,580))             
+    FOOD.add((120,580))             
+    FOOD.add((60,580))             
+    FOOD.add((40,580))             
+                                    
+                    
+
 init()
+initfood()
 
 # player movement
 def pMove(xPos, yPos, deg):
@@ -281,7 +319,6 @@ def dWalls():
 
 done = [0,0,0,0]
 while running:
-
     if state == "ready":
         # show intro background
         readyBackground()
@@ -294,7 +331,7 @@ while running:
             # press space to start the game
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    pygame.mixer.music.stop() # stop the intro music to start the game
+                    pygame.mixer.music.stop() # stop the intro music to start the game  
                     state = "start" # change the state to start
 
     elif state == "start":
@@ -305,9 +342,13 @@ while running:
         # show exit door
         exitDoor()
         
+        
+        #food 
+        for p in FOOD:
+            screen.blit(foodPic,(p[0],p[1]))
+        
         # show score and level
-        if score > 0:
-            score -= 1
+        
         scoreLevelTxt(score, level)
 
         # loop on each event (any pressed key)
@@ -329,10 +370,14 @@ while running:
                 if event.key == pygame.K_DOWN and (pacmanXpos,pacmanYpos+20) not in WALLS:
                     deg = 270
                     pacmanYpos+=20
-
+        
         # pacman movement
+        if((pacmanXpos,pacmanYpos) in FOOD):
+            screen.blit(blackPic,(pacmanXpos,pacmanYpos))
+            score+=100
+            FOOD.remove((pacmanXpos,pacmanYpos))
         pMove(pacmanXpos, pacmanYpos, deg)
-
+        
         # enemey movement
         for i in range (enemyNum):
             if level == 1:
@@ -371,7 +416,7 @@ while running:
                 deathMus.play()
                 # change the state of the game to lost
                 level = 1
-                score = 1000
+                score = 0
                 state = "lost"
 
         # pacman win
@@ -389,11 +434,12 @@ while running:
             enemyYpos = [20, 40, 400, 220]
             enemyXcha = [0, 0, 0, 0]
             enemyYcha = [0, 0, 0, 0]
+            initfood()
             if level < 4:
-                score = 1000
+                score = 0
                 level += 1
             else:
-                score = 1000
+                score = 0
                 level = 1
             state = "next level"
 
@@ -438,6 +484,7 @@ while running:
                     enemyYpos = [20, 40, 400, 220]
                     enemyXcha = [0, 0, 0, 0]
                     enemyYcha = [0, 0, 0, 0]
+                    initfood()
                     state = "start"
 
     # frame rate
